@@ -41,11 +41,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button mPlayButton = (Button) findViewById(R.id.playButton);
-        Button mForwardButton = (Button) findViewById(R.id.forwardButton);
-        Button mReverseButton = (Button) findViewById(R.id.reverseButton);
-
-
         //Android 6.0以降の場合
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             //パーミッションの許可状態を確認する
@@ -76,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void getContentsInfo() {
 
+        Button mPlayButton = (Button) findViewById(R.id.playButton);
+        final Button mForwardButton = (Button) findViewById(R.id.forwardButton);
+        final Button mReverseButton = (Button) findViewById(R.id.reverseButton);
+
         ContentResolver resolver = getContentResolver();
         cursor = resolver.query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -85,10 +84,9 @@ public class MainActivity extends AppCompatActivity {
                 null
         );
 
-        //indexからIDを習得し、そのIDから画像のURIを習得する
-        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-        Long id = cursor.getLong(fieldIndex);
-        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+
+
+
 
 
         mPlayButton.setOnClickListener(new View.OnClickListener(){
@@ -103,13 +101,31 @@ public class MainActivity extends AppCompatActivity {
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                cursor.moveToNext();
-                                    //ImageViewで表示を依頼する
-                                    ImageView imageView = (ImageView) findViewById(R.id.image);
-                                    imageView.setImageURI(imageUri);
-                                cursor.close();
-
+                                //タイマーが進んでいた場合にボタンを押すとタイマーが止まる。
+                                if (mTimerSec == 0) {
+                                    //indexからIDを習得し、そのIDから画像のURIを習得する
+                                    if (cursor.moveToNext() == true) {
+                                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+                                        Long id = cursor.getLong(fieldIndex);
+                                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                                        //ImageViewで表示を依頼する
+                                        ImageView imageView = (ImageView) findViewById(R.id.image);
+                                        imageView.setImageURI(imageUri);
+                                    } else {
+                                        cursor.moveToFirst();
+                                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+                                        Long id = cursor.getLong(fieldIndex);
+                                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                                        //ImageViewで表示を依頼する
+                                        ImageView imageView = (ImageView) findViewById(R.id.image);
+                                        imageView.setImageURI(imageUri);
+                                    }
+                                }else if(mTimer != null){
+                                    mTimer.cancel();
+                                    mTimer = null;
+                                }
                             }
+
                         });
                     }
                 },2000,2000);
@@ -122,15 +138,87 @@ public class MainActivity extends AppCompatActivity {
         mForwardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //
+                //ボタンを押すと進む。スライドショー中はボタンを無効化
+                if(mTimerSec ==0 ) {
+                    if (cursor.moveToNext() == true) {
+                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+                        Long id = cursor.getLong(fieldIndex);
+                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                        //ImageViewで表示を依頼する
+                        ImageView imageView = (ImageView) findViewById(R.id.image);
+                        imageView.setImageURI(imageUri);
+                    } else {
+                        cursor.moveToFirst();
+                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+                        Long id = cursor.getLong(fieldIndex);
+                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                        //ImageViewで表示を依頼する
+                        ImageView imageView = (ImageView) findViewById(R.id.image);
+                        imageView.setImageURI(imageUri);
+                    }
+                }else{
+                    mForwardButton.setEnabled(false);
+                }
             }
         });
 
         mReverseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //
+                //ボタンを押すと戻る。スライドショー中は無効化
+                if (mTimerSec < 0) {
+                    if (cursor.moveToPrevious() == true) {
+                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+                        Long id = cursor.getLong(fieldIndex);
+                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                        //ImageViewで表示を依頼する
+                        ImageView imageView = (ImageView) findViewById(R.id.image);
+                        imageView.setImageURI(imageUri);
+                    } else {
+                        cursor.moveToFirst();
+                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+                        Long id = cursor.getLong(fieldIndex);
+                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                        //ImageViewで表示を依頼する
+                        ImageView imageView = (ImageView) findViewById(R.id.image);
+                        imageView.setImageURI(imageUri);
+                    }
+                } else {
+                    mReverseButton.setEnabled(false);
+                }
             }
         });
     }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        cursor.close();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+    }
+
 }
