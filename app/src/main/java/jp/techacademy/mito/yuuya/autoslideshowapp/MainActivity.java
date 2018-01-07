@@ -11,11 +11,9 @@ import android.os.Build;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -43,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Button mPlayButton = (Button) findViewById(R.id.playButton);
+        Button mForwardButton = (Button) findViewById(R.id.forwardButton);
+        Button mReverseButton = (Button) findViewById(R.id.reverseButton);
 
 
         //Android 6.0以降の場合
@@ -70,11 +71,11 @@ public class MainActivity extends AppCompatActivity {
                 break;
             default:
                 break;
-
         }
     }
 
     public void getContentsInfo() {
+
         ContentResolver resolver = getContentResolver();
         cursor = resolver.query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -84,25 +85,16 @@ public class MainActivity extends AppCompatActivity {
                 null
         );
 
-        if (cursor.moveToFirst()){
-            do{
-                //indexからIDを習得し、そのIDから画像のURIを習得する
-                int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-                Long id = cursor.getLong(fieldIndex);
-                imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-
-                Log.d("ANDROID","URI:"+imageUri.toString());
-
-            }while (cursor.moveToNext());
-        }
-        cursor.close();
-
+        //indexからIDを習得し、そのIDから画像のURIを習得する
+        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+        Long id = cursor.getLong(fieldIndex);
+        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
 
 
         mPlayButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-
+                mTimer = new Timer();
                 mTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
@@ -111,9 +103,11 @@ public class MainActivity extends AppCompatActivity {
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                //ImageViewで表示を依頼する
-                                ImageView imageView =(ImageView) findViewById(R.id.image);
-                                imageView.setImageURI(imageUri);
+                                cursor.moveToNext();
+                                    //ImageViewで表示を依頼する
+                                    ImageView imageView = (ImageView) findViewById(R.id.image);
+                                    imageView.setImageURI(imageUri);
+                                cursor.close();
 
                             }
                         });
@@ -138,10 +132,5 @@ public class MainActivity extends AppCompatActivity {
                 //
             }
         });
-
-
-
-
-
     }
 }
