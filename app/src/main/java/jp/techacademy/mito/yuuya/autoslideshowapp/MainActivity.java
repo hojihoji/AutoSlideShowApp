@@ -41,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mPlayButton = findViewById(R.id.playButton);
+        mForwardButton = findViewById(R.id.forwardButton);
+        mReverseButton = findViewById(R.id.reverseButton);
+
         //Android 6.0以降の場合
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             //パーミッションの許可状態を確認する
@@ -71,9 +75,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void getContentsInfo() {
 
-        Button mPlayButton = (Button) findViewById(R.id.playButton);
-        Button mForwardButton = (Button) findViewById(R.id.forwardButton);
-        Button mReverseButton = (Button) findViewById(R.id.reverseButton);
+        mPlayButton = findViewById(R.id.playButton);
+        mForwardButton = findViewById(R.id.forwardButton);
+        mReverseButton = findViewById(R.id.reverseButton);
 
         ContentResolver resolver = getContentResolver();
         cursor = resolver.query(
@@ -85,10 +89,6 @@ public class MainActivity extends AppCompatActivity {
         );
 
 
-
-
-
-
         mPlayButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
@@ -96,14 +96,14 @@ public class MainActivity extends AppCompatActivity {
                 mTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        mTimerSec +=2.0;
 
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                //タイマーが起動していない場合、スライドショーを開始する
-                                if (mTimerSec == 0) {
+                                //mTimerSecが0の場合、スライドショーを開始する
+                                if (mTimerSec == 0 ) {
                                     //indexからIDを習得し、そのIDから画像のURIを習得する
+                                    mTimerSec +=2.0;
                                     if (cursor.moveToNext() == true) {
                                         int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
                                         Long id = cursor.getLong(fieldIndex);
@@ -120,16 +120,17 @@ public class MainActivity extends AppCompatActivity {
                                         ImageView imageView = (ImageView) findViewById(R.id.image);
                                         imageView.setImageURI(imageUri);
                                     }
-                                //タイマーが起動中の場合はタイマーをキャンセルする。またタイマーをnullにする
+                                //mTimerSecが0以外の場合、mTimerをキャンセル、nullまたmTimerSecを0にする
                                 }else{
                                     mTimer.cancel();
                                     mTimer = null;
+                                    mTimerSec = 0;
                                 }
                             }
 
                         });
                     }
-                },2000,2000);
+                },0,2000);
 
             }
 
@@ -176,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                         ImageView imageView = (ImageView) findViewById(R.id.image);
                         imageView.setImageURI(imageUri);
                     } else {
-                        cursor.moveToFirst();
+                        cursor.moveToLast();
                         int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
                         Long id = cursor.getLong(fieldIndex);
                         imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
