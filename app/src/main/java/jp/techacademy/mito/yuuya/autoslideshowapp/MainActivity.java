@@ -72,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
     public void getContentsInfo() {
 
         Button mPlayButton = (Button) findViewById(R.id.playButton);
-        final Button mForwardButton = (Button) findViewById(R.id.forwardButton);
-        final Button mReverseButton = (Button) findViewById(R.id.reverseButton);
+        Button mForwardButton = (Button) findViewById(R.id.forwardButton);
+        Button mReverseButton = (Button) findViewById(R.id.reverseButton);
 
         ContentResolver resolver = getContentResolver();
         cursor = resolver.query(
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                //タイマーが進んでいた場合にボタンを押すとタイマーが止まる。
+                                //タイマーが起動していない場合、スライドショーを開始する
                                 if (mTimerSec == 0) {
                                     //indexからIDを習得し、そのIDから画像のURIを習得する
                                     if (cursor.moveToNext() == true) {
@@ -120,7 +120,8 @@ public class MainActivity extends AppCompatActivity {
                                         ImageView imageView = (ImageView) findViewById(R.id.image);
                                         imageView.setImageURI(imageUri);
                                     }
-                                }else if(mTimer != null){
+                                //タイマーが起動中の場合はタイマーをキャンセルする。またタイマーをnullにする
+                                }else{
                                     mTimer.cancel();
                                     mTimer = null;
                                 }
@@ -138,8 +139,8 @@ public class MainActivity extends AppCompatActivity {
         mForwardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //ボタンを押すと進む。スライドショー中はボタンを無効化
-                if(mTimerSec ==0 ) {
+                //ボタンを押すと進む。スライドショー中はボタンを無効化(タイマーがnullの場合有効)
+                if(mTimer == null ) {
                     if (cursor.moveToNext() == true) {
                         int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
                         Long id = cursor.getLong(fieldIndex);
@@ -165,8 +166,8 @@ public class MainActivity extends AppCompatActivity {
         mReverseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //ボタンを押すと戻る。スライドショー中は無効化
-                if (mTimerSec < 0) {
+                //ボタンを押すと戻る。スライドショー中は無効化(タイマーがnullの場合有効)
+                if (mTimer == null) {
                     if (cursor.moveToPrevious() == true) {
                         int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
                         Long id = cursor.getLong(fieldIndex);
