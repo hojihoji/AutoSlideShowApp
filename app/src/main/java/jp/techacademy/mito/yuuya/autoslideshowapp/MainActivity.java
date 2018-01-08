@@ -22,9 +22,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CODE = 100;
 
 
-    double mTimerSec =0.0;
-
-
     Timer mTimer;
     Handler mHandler = new Handler();
 
@@ -91,19 +88,18 @@ public class MainActivity extends AppCompatActivity {
 
         mPlayButton.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View view){
-                mTimer = new Timer();
-                mTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
+            public void onClick(View view) {
+                if (mTimer == null) {
+                    mTimer = new Timer();
+                    mTimer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
 
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                //mTimerSecが0の場合、スライドショーを開始する
-                                if (mTimerSec == 0 ) {
-                                    //indexからIDを習得し、そのIDから画像のURIを習得する
-                                    mTimerSec +=2.0;
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //mTimerSecが0の場合、スライドショーを開始する
+
                                     if (cursor.moveToNext() == true) {
                                         int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
                                         Long id = cursor.getLong(fieldIndex);
@@ -119,19 +115,19 @@ public class MainActivity extends AppCompatActivity {
                                         //ImageViewで表示を依頼する
                                         ImageView imageView = (ImageView) findViewById(R.id.image);
                                         imageView.setImageURI(imageUri);
-                                    }
-                                //mTimerSecが0以外の場合、mTimerをキャンセル、nullまたmTimerSecを0にする
-                                }else{
-                                    mTimer.cancel();
-                                    mTimer = null;
-                                    mTimerSec = 0;
+                                        }
                                 }
-                            }
 
-                        });
-                    }
-                },0,2000);
+                            });
+                        }
+                    }, 0, 2000);
 
+                }else{
+                mTimer.cancel();
+                mTimer = null;
+                mForwardButton.setEnabled(true);
+                mReverseButton.setEnabled(true);
+            }
             }
 
         });
