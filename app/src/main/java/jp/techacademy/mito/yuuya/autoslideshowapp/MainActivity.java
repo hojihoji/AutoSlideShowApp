@@ -173,7 +173,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy(){
         super.onDestroy();
-        cursor.close();
+        if(cursor !=null) {
+            cursor.close();
+        }
     }
 
 
