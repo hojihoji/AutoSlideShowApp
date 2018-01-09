@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     Button mReverseButton;
 
     ImageView imageView;
+    TextView textView;
 
 
     @Override
@@ -44,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         mForwardButton = findViewById(R.id.forwardButton);
         mReverseButton = findViewById(R.id.reverseButton);
         imageView = (ImageView) findViewById(R.id.image);
+        textView = (TextView) findViewById(R.id.textView);
 
         //Android 6.0以降の場合
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
@@ -98,6 +102,10 @@ public class MainActivity extends AppCompatActivity {
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
+                                    mForwardButton.setEnabled(false);
+                                    mReverseButton.setEnabled(false);
+                                    mPlayButton.setText("停止");
+                                    textView.setText("スライドショー再生中");
                                     //mTimerSecが0の場合、スライドショーを開始する
 
                                     if (cursor.moveToNext() == true) {
@@ -117,6 +125,8 @@ public class MainActivity extends AppCompatActivity {
                 mTimer = null;
                 mForwardButton.setEnabled(true);
                 mReverseButton.setEnabled(true);
+                mPlayButton.setText("再生");
+                textView.setText("スライドショー停止中");
             }
             }
 
@@ -126,16 +136,13 @@ public class MainActivity extends AppCompatActivity {
         mForwardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //ボタンを押すと進む。スライドショー中はボタンを無効化(タイマーがnullの場合有効)
-                if(mTimer == null ) {
-                    if (cursor.moveToNext() == true) {
-                        setImageView();
-                    } else {
-                        cursor.moveToFirst();
-                        setImageView();
-                    }
-                }else{
-                    mForwardButton.setEnabled(false);
+                //ボタンを押すと進む
+
+                if (cursor.moveToNext() == true) {
+                    setImageView();
+                } else {
+                    cursor.moveToFirst();
+                    setImageView();
                 }
             }
         });
@@ -143,17 +150,14 @@ public class MainActivity extends AppCompatActivity {
         mReverseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //ボタンを押すと戻る。スライドショー中は無効化(タイマーがnullの場合有効)
-                if (mTimer == null) {
+                //ボタンを押すと戻る
+
                     if (cursor.moveToPrevious() == true) {
                         setImageView();
                     } else {
                         cursor.moveToLast();
                         setImageView();
                     }
-                } else {
-                    mReverseButton.setEnabled(false);
-                }
             }
         });
     }
