@@ -32,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     Button mForwardButton;
     Button mReverseButton;
 
+    ImageView imageView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         mPlayButton = findViewById(R.id.playButton);
         mForwardButton = findViewById(R.id.forwardButton);
         mReverseButton = findViewById(R.id.reverseButton);
+        imageView = (ImageView) findViewById(R.id.image);
 
         //Android 6.0以降の場合
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
@@ -72,10 +75,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void getContentsInfo() {
 
-        mPlayButton = findViewById(R.id.playButton);
-        mForwardButton = findViewById(R.id.forwardButton);
-        mReverseButton = findViewById(R.id.reverseButton);
-
         ContentResolver resolver = getContentResolver();
         cursor = resolver.query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -91,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (mTimer == null) {
                     mTimer = new Timer();
+
                     mTimer.schedule(new TimerTask() {
                         @Override
                         public void run() {
@@ -101,20 +101,10 @@ public class MainActivity extends AppCompatActivity {
                                     //mTimerSecが0の場合、スライドショーを開始する
 
                                     if (cursor.moveToNext() == true) {
-                                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-                                        Long id = cursor.getLong(fieldIndex);
-                                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                                        //ImageViewで表示を依頼する
-                                        ImageView imageView = (ImageView) findViewById(R.id.image);
-                                        imageView.setImageURI(imageUri);
+                                        setImageView();
                                     } else {
                                         cursor.moveToFirst();
-                                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-                                        Long id = cursor.getLong(fieldIndex);
-                                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                                        //ImageViewで表示を依頼する
-                                        ImageView imageView = (ImageView) findViewById(R.id.image);
-                                        imageView.setImageURI(imageUri);
+                                        setImageView();
                                         }
                                 }
 
@@ -139,20 +129,10 @@ public class MainActivity extends AppCompatActivity {
                 //ボタンを押すと進む。スライドショー中はボタンを無効化(タイマーがnullの場合有効)
                 if(mTimer == null ) {
                     if (cursor.moveToNext() == true) {
-                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-                        Long id = cursor.getLong(fieldIndex);
-                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                        //ImageViewで表示を依頼する
-                        ImageView imageView = (ImageView) findViewById(R.id.image);
-                        imageView.setImageURI(imageUri);
+                        setImageView();
                     } else {
                         cursor.moveToFirst();
-                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-                        Long id = cursor.getLong(fieldIndex);
-                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                        //ImageViewで表示を依頼する
-                        ImageView imageView = (ImageView) findViewById(R.id.image);
-                        imageView.setImageURI(imageUri);
+                        setImageView();
                     }
                 }else{
                     mForwardButton.setEnabled(false);
@@ -166,20 +146,10 @@ public class MainActivity extends AppCompatActivity {
                 //ボタンを押すと戻る。スライドショー中は無効化(タイマーがnullの場合有効)
                 if (mTimer == null) {
                     if (cursor.moveToPrevious() == true) {
-                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-                        Long id = cursor.getLong(fieldIndex);
-                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                        //ImageViewで表示を依頼する
-                        ImageView imageView = (ImageView) findViewById(R.id.image);
-                        imageView.setImageURI(imageUri);
+                        setImageView();
                     } else {
                         cursor.moveToLast();
-                        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-                        Long id = cursor.getLong(fieldIndex);
-                        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-                        //ImageViewで表示を依頼する
-                        ImageView imageView = (ImageView) findViewById(R.id.image);
-                        imageView.setImageURI(imageUri);
+                        setImageView();
                     }
                 } else {
                     mReverseButton.setEnabled(false);
@@ -188,24 +158,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onStart(){
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume(){
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause(){
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop(){
-        super.onStop();
+    private void setImageView() {
+        int fieldIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+        Long id = cursor.getLong(fieldIndex);
+        imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+        //ImageViewで表示を依頼する
+        imageView.setImageURI(imageUri);
     }
 
     @Override
@@ -214,9 +172,5 @@ public class MainActivity extends AppCompatActivity {
         cursor.close();
     }
 
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-    }
 
 }
